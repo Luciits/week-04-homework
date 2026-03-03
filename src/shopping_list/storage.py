@@ -2,7 +2,7 @@ import sys
 import os
 import json
 
-def load_list(list_file = 'list.json'):
+def load_list(list_file = 'shopping.json'):
     """
     Load shopping list from JSON file. If the file does not exist, return an empty list.
     """
@@ -11,10 +11,14 @@ def load_list(list_file = 'list.json'):
     with open(list_file, 'r', encoding='utf-8') as f:
         return json.load(f)
 
-def save_list(items_list, list_file = 'list.json'):
+def save_list(items_list, list_file = 'shopping.json'):
     """
     Save shopping list in JSON file.
     """
-    with open(list_file, 'w', encoding='utf=8') as f:
+    with open(list_file, 'w', encoding='utf-8') as f:
         json.dump(items_list, f, indent=2, ensure_ascii=False)
 
+if __name__ == "__main__":
+    test_list = load_list()
+    print(f"Ielādēts saraksts: {test_list}")
+    save_list(test_list)
