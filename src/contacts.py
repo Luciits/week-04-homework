@@ -22,14 +22,14 @@ def save_contacts(contacts):
         # indent=2 padara JSON failu cilvēkiem lasāmu
         json.dump(contacts, f, indent=2, ensure_ascii=False)
 
-def add_contacts(kontaktu_saraksts):
+def add_contacts(name, phone):
     """
     Pievieno jaunu kontaktu kontaktu sarakstam
     """
-    name = input("Ievadiet kontakta vārdu: ")
-    phone = input("Ievadiet tālruņa nr.: ")
+    kontaktu_saraksts = load_contacts()
     kontaktu_saraksts.append({"name": name, "phone": phone})
     print(f"✓ Pievienots: {name} ({phone})")
+    save_contacts(kontaktu_saraksts)
     return True
 
 def list_contacts():
@@ -57,8 +57,22 @@ def search_contacts(query):
         print(f"{i}. {c['name']} - {c['phone']}")
 
 if __name__ == "__main__":
-    kontaktu_saraksts = load_contacts()
-    add_contacts(kontaktu_saraksts)
-    save_contacts(kontaktu_saraksts)
-    list_contacts()
-    search_contacts("Artūrs")
+    if len(sys.argv) < 2:
+        print("Lietošana: python contacts.py [add/list/search]")
+    else:
+        command = sys.argv[1]
+        if command == "add":
+            if len(sys.argv) < 4:
+                print("Lietošana: python contacts.py add <name> <phone>")
+            else:
+                name = sys.argv[2]
+                phone = sys.argv[3]
+                add_contacts(name, phone)
+        elif command == "list":
+            list_contacts()
+        elif command == "search":
+            if len(sys.argv) < 3:
+                print("Lietošana: python contacts.py search <query>")
+            else:
+                query = sys.argv[2]
+                search_contacts(query)
