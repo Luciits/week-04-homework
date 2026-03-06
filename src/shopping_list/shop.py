@@ -2,15 +2,13 @@ import storage
 import sys
 
 
-def add_item():
+def add_item(item, price):
     """
     Pievieno jaunu produktu produktu sarakstam.
     """
     shopping_list = storage.load_list()
-    item = input("Ievadi preci: ")
-    price_input = input("Ievadi preces cenu: ")
     try:
-        price = float(price_input)
+        price = float(price)
         shopping_list.append({"item": item, "price": price})
         storage.save_list(shopping_list)
         print(f"✓ Pievienots: {item} ({price:.2f} EUR)")
@@ -57,7 +55,13 @@ if __name__ == "__main__":
     else:
         command = sys.argv[1]
         if command == "add":
-            add_item()
+            if len(sys.argv) == 4:
+                name = sys.argv[2]
+                price = (sys.argv[3])
+                add_item(name, price)
+            else:
+                print("Kļūda: add komandai vajag preci un cenu!")
+                print("Piemērs: python sjop.py add Maize 1.20")
         elif command == "list":
             list_item()
         elif command == "total":
