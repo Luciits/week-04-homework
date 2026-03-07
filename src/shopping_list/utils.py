@@ -1,34 +1,20 @@
 def calc_line_total(item):
     """
-    Aprēķina vienas preces kopējo summu (daudzums x cena)
+    Atgriež qty x price
+
     """
-    total = item['qty'] * item['price']
-    return total
+    return round(item.get('qty', 1) * item.get('price', 0), 2)
 
 def calc_grand_total(items):
     """
-    Aprēķina visa sarakta kopējo summu.
+    Summē visus line totals
+
     """
-    grand_total = 0.0
-    for item in items:
-        grand_total += calc_line_total(item)
-    return grand_total
+    return round(sum(calc_line_total(item) for item in items), 2)
 
 def count_units(items):
     """
-    Saskaita kopējo preču skaitu visā sarakstā.
+    Saskaita kopējo vienību skaitu (qty)
+    
     """
-    total_units = 0
-    for item in items:
-        total_units += item['qty']
-    return total_units
-
-if __name__ == "__main__":
-    # Testa saraksts ar paraug datiem
-    test_list = [{'item': 'Piens', 'qty': 2, 'price': 1.50},{'item': 'Maize', 'qty': 1, 'price': 1.20}]
-    # Tests vienas rindas aprēķins
-    print(f'Testa rindas summa: {calc_line_total(test_list[0])}')
-    # Tests kopējā summa
-    print(f'Tests kopējā summa: {calc_grand_total(test_list)}')
-    # Tests kopējo produktu skaits
-    print(f'Tests kopējais produktu skaits: {count_units(test_list)}')
+    return sum(item.get('qty', 1) for item in items)

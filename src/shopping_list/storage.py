@@ -1,24 +1,51 @@
-import sys
-import os
 import json
+import os
 
-def load_list(list_file = 'shopping.json'):
+SHOPPING_FILE = "shopping.json"
+PRICES_FILE = "prices.json"
+
+def load_list():
     """
-    Load shopping list from JSON file. If the file does not exist, return an empty list.
+    Ielādē iepirkumu sarakstu.
+
     """
-    if not os.path.exists(list_file):
+    if not os.path.exists(SHOPPING_FILE):
         return []
-    with open(list_file, 'r', encoding='utf-8') as f:
+    with open(SHOPPING_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 
-def save_list(items_list, list_file = 'shopping.json'):
+def save_list(items):
     """
-    Save shopping list in JSON file.
-    """
-    with open(list_file, 'w', encoding='utf-8') as f:
-        json.dump(items_list, f, indent=2, ensure_ascii=False)
+    Saglabā iepirkumu sarakstu.
 
-if __name__ == "__main__":
-    test_list = load_list()
-    print(f"Ielādēts saraksts: {test_list}")
-    save_list(test_list)
+    """
+    with open(SHOPPING_FILE, "w", encoding="utf-8") as f:
+        json.dump(items, f, indent=2, ensure_ascii=False)
+
+def load_prices():
+    """
+    Ielādē cenu sarakstu.
+
+    """
+    if not os.path.exists(PRICES_FILE):
+        return {}
+    with open(PRICES_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def save_prices(prices):
+    """
+    saglabā cenu sarakstu
+
+    """
+    with open(PRICES_FILE, "w", encoding="utf-8") as f:
+        json.dump(prices, f, indent=2, ensure_ascii=False)
+
+def get_price(name):
+    
+    prices = load_prices()
+    return prices.get(name)
+
+def set_price(name, price):
+    prices = load_prices()
+    prices[name] = round(float(price), 2)
+    save_prices(prices)
