@@ -1,72 +1,88 @@
-import storage
 import sys
+import storage
+import utils
 
-
-def add_item(item, price):
-    """
-    Pievieno jaunu produktu produktu sarakstam.
-    """
-    shopping_list = storage.load_list()
-    try:
-        price = float(price)
-        shopping_list.append({"item": item, "price": price})
-        storage.save_list(shopping_list)
-        print(f"✓ Pievienots: {item} ({price:.2f} EUR)")
-        return True
-    except ValueError:
-        print("Kļūda: Cena nav derīgs skaitlis! Mēģiniet vēlreiz.")
-        return False
-
-def list_item():
-    """
-    Parāda esošo iepirkumu sarakstu
-    """
-    shopping_list = storage.load_list()
-    if not shopping_list:
-        print("Iepirkumu saraksts ir tukšs!")
+def handle_add(args):
+    if len(args) < 2:
+        print("Kļūda: Trūkst argumentu. Lietošana: add [nosaukums] [daudzums] (cena)")
         return
-    print("\nIepirkumu saraksts:")
-    for i, l in enumerate(shopping_list, 1):
-        print(f"{i}. {l['item']} - {l['price']}")
 
-def total_price():
-    """
-    Aprēķina kopējo iepirkumu summu.
-    """
-    shopping_list = storage.load_list()
-    summa = 0.0
-    item_count = len(shopping_list)
-    for shop in shopping_list:
-        summa += shop['price']
-    print(f"Kopējā summa: {summa:.2f} EUR ({item_count} produkti)")
+    name = args[0]
+    try:
+        qty = int(args[1])
+        if qty <= 0: raise ValueError
+    except (ValueError, IndexError):
+        print("Kļūda: Daudzumam jābūt pozitīvam veselam skaitlim.")
+        return
 
+    # 3. soļa loģika: Cenu meklēšana
+    price = storage.get_price(name)
+    
+    if price is not None:
+        print(f"Atrasta cena: {price:.2f} EUR/gab.")
+        choice = input("[A]kceptēt / [M]ainīt? > ").strip().upper()
+        if choice == 'M':
+            try:
+                price = float(input("Jaunā cena: > "))
+                if price <= 0: raise ValueError
+                storage.set_price(name, price)
+                print(f"✓ Cena atjaunināta: {name} → {price:.2f} EUR")
+            except ValueError:
+                print("Kļūda: Nederīga cena.")
+                return
+    else:
+        # Ja cena nav zināma
+        try:
+            print("Cena nav zināma.")
+            price = float(input("Ievadi cenu: > "))
+            if price <= 0: raise ValueError
+            storage.set_price(name, price)
+            print(f"✓ Cena saglabāta: {name} ({price:.2f} EUR)")
+        except ValueError:
+            print("Kļūda: Nederīga cena.")
+            return
 
-def clear_list():
-    """
-    Nodzēš iepirkumu sarakstu un saglabā tukšu sarakstu.
-    """
-    empty_list = []
-    storage.save_list(empty_list)
-    print("✓ Iepirkumu saraksts ir notīrīts!")
+    # Saglabāšana sarakstā
+    items = storage.load_list()
+    items.append({"name": name, "qty": qty, "price": price})
+    storage.save_list(items)
+    
+    line_total = utils.calc_line_total({"qty": qty, "price": price})
+    print(f"✓ Pievienots: {name} × {qty} ({price:.2f} EUR/gab.) = {line_total:.2f} EUR")
+
+def handle_list():
+    items = storage.load_list()
+    if not items:
+        print("Iepirkumu saraksts ir tukšs.")
+        return
+    print("Iepirkumu saraksts:")
+    for i, item in enumerate(items, 1):
+        line_total = utils.calc_line_total(item)
+        print(f"  {i}. {item['name']} × {item['qty']} — {item['price']:.2f} EUR/gab. — {line_total:.2f} EUR")
+
+def handle_total():
+    items = storage.load_list()
+    total = utils.calc_grand_total(items)
+    units = utils.count_units(items)
+    print(f"Kopā: {total:.2f} EUR ({units} vienības, {len(items)} produkti)")
+
+def handle_clear():
+    storage.save_list([])
+    print("✓ Saraksts notīrīts.")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Lietošana: python shop.py [add/list/total/clear]")
+        print("Komandas: add, list, total, clear")
+        sys.exit(1)
+
+    cmd = sys.argv[1].lower()
+    if cmd == "add":
+        handle_add(sys.argv[2:])
+    elif cmd == "list":
+        handle_list()
+    elif cmd == "total":
+        handle_total()
+    elif cmd == "clear":
+        handle_clear()
     else:
-        command = sys.argv[1]
-        if command == "add":
-            if len(sys.argv) == 4:
-                name = sys.argv[2]
-                price = (sys.argv[3])
-                add_item(name, price)
-            else:
-                print("Kļūda: add komandai vajag preci un cenu!")
-                print("Piemērs: python sjop.py add Maize 1.20")
-        elif command == "list":
-            list_item()
-        elif command == "total":
-            total_price()
-        elif command == "clear":
-            clear_list()
-        else:
-            print(f"Nezināma komanda: {command}")
+        print("Nezināma komanda.")
